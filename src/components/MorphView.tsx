@@ -16,7 +16,7 @@ import cx from "classnames";
 import { Display } from "./Display.tsx";
 import { MorphDirection } from "../morphs/direction.ts";
 import { z } from "zod";
-import { easingNames, easings, EasingType } from "../easing.ts";
+import { easings, EasingType } from "../easing.ts";
 import { MorphOptions } from "../morphs/types.ts";
 import { EasingSelect } from "./EasingSelect.tsx";
 
@@ -31,6 +31,9 @@ const MorphStateSchema = z.object({
   easing1: z.string().default("linear"),
   easing2: z.string().default("linear"),
   easing3: z.string().default("linear"),
+  easing1Invert: z.boolean().default(false),
+  easing2Invert: z.boolean().default(false),
+  easing3Invert: z.boolean().default(false),
   pingpong: z.boolean().default(false),
   color: z.string().default(ORANGE),
 });
@@ -44,6 +47,9 @@ const defaultMorphState = MorphStateSchema.parse({
   easing1: "linear",
   easing2: "linear",
   easing3: "linear",
+  easing1Invert: false,
+  easing2Invert: false,
+  easing3Invert: false,
   pingpong: false,
   color: ORANGE,
 });
@@ -72,6 +78,9 @@ export function MorphView({ font }: { font: Font }) {
     easing1,
     easing2,
     easing3,
+    easing1Invert,
+    easing2Invert,
+    easing3Invert,
     pingpong,
     speed,
     stay,
@@ -95,9 +104,18 @@ export function MorphView({ font }: { font: Font }) {
     const phaseWithStay = Math.min(1, phase / (1 - (stay ?? 0)));
     const opts: MorphOptions = {
       direction,
-      easing1: easings[easing1 as EasingType] ?? easings.linear,
-      easing2: easings[easing2 as EasingType] ?? easings.linear,
-      easing3: easings[easing3 as EasingType] ?? easings.linear,
+      easing1: {
+        func: easings[easing1 as EasingType] ?? easings.linear,
+        invert: !!easing1Invert,
+      },
+      easing2: {
+        func: easings[easing2 as EasingType] ?? easings.linear,
+        invert: !!easing2Invert,
+      },
+      easing3: {
+        func: easings[easing3 as EasingType] ?? easings.linear,
+        invert: !!easing3Invert,
+      },
     };
     return morph(drawing1, drawing2, phaseWithStay, style, opts);
   }, [
@@ -115,6 +133,7 @@ export function MorphView({ font }: { font: Font }) {
   const currentMorpher = React.useMemo(() => getMorpher(style), [style]);
   useCSSVariableDefinitionOnRootEffect("--color-dot", color ?? ORANGE);
 
+  const nEasings = currentMorpher?.supportsEasings ?? 0;
   return (
     <>
       <div className="flex flex-col w-80 p-2">
@@ -166,7 +185,6 @@ export function MorphView({ font }: { font: Font }) {
             onChange={(e) => setState((s) => ({ ...s, color: e.target.value }))}
           />
         </div>
-
         <div className="grid grid-cols-2">
           {getMorpherNames().map((name) => (
             <label key={name} className="p-1 text-nowrap">
@@ -193,30 +211,38 @@ export function MorphView({ font }: { font: Font }) {
             </button>
           ))}
         </div>
-        {currentMorpher?.supportsEasings ? (
-          <>
-            <div>
-              <b>Easing 1</b>
-              <EasingSelect
-                value={easing1}
-                setValue={(v) => setState((s) => ({ ...s, easing1: v }))}
-              />
-            </div>
-            <div>
-              <b>Easing 2</b>
-              <EasingSelect
-                value={easing2}
-                setValue={(v) => setState((s) => ({ ...s, easing2: v }))}
-              />
-            </div>
-            <div>
-              <b>Easing 3</b>
-              <EasingSelect
-                value={easing3}
-                setValue={(v) => setState((s) => ({ ...s, easing3: v }))}
-              />
-            </div>
-          </>
+        {nEasings > 0 ? (
+          <div>
+            <b>{currentMorpher?.easing1Name ?? "Easing 1"}</b>
+            <EasingSelect
+              value={easing1}
+              setValue={(v) => setState((s) => ({ ...s, easing1: v }))}
+              invert={easing1Invert}
+              setInvert={(v) => setState((s) => ({ ...s, easing1Invert: v }))}
+            />
+          </div>
+        ) : null}
+        {nEasings > 1 ? (
+          <div>
+            <b>{currentMorpher?.easing2Name ?? "Easing 2"}</b>
+            <EasingSelect
+              value={easing2}
+              setValue={(v) => setState((s) => ({ ...s, easing2: v }))}
+              invert={easing2Invert}
+              setInvert={(v) => setState((s) => ({ ...s, easing2Invert: v }))}
+            />
+          </div>
+        ) : null}
+        {nEasings > 2 ? (
+          <div>
+            <b>{currentMorpher?.easing3Name ?? "Easing 3"}</b>
+            <EasingSelect
+              value={easing3}
+              setValue={(v) => setState((s) => ({ ...s, easing3: v }))}
+              invert={easing3Invert}
+              setInvert={(v) => setState((s) => ({ ...s, easing3Invert: v }))}
+            />
+          </div>
         ) : null}
         <hr />
         <button onClick={() => setShowDebug((s) => !s)}>
@@ -228,6 +254,7 @@ export function MorphView({ font }: { font: Font }) {
         <Display drawing={morphDrawing} />
         {showDebug ? <Display drawing={drawing2} /> : null}
       </div>
+      ;
     </>
   );
 }

@@ -30,7 +30,12 @@ register("CoverWithBorder", (d1, d2, [w, h], phase, { direction }) => {
 register(
   "Scroll",
   (d1, d2, [w, h], phase, opts) => scroll(d1, d2, w, h, phase, opts),
-  { supportsEasings: true },
+  {
+    supportsEasings: 3,
+    easing1Name: "Start Edge",
+    easing2Name: "End Edge",
+    easing3Name: "Edge Mapping",
+  },
 );
 
 export function morph(

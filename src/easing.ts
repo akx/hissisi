@@ -46,3 +46,15 @@ export const easings = {
 
 export const easingNames = Object.keys(easings) as ReadonlyArray<EasingType>;
 export type EasingType = keyof typeof easings;
+
+export interface EasingWithOptions {
+  func: (t: number) => number;
+  invert: boolean;
+}
+
+export function applyEasingWithOptions(
+  { func, invert }: EasingWithOptions,
+  t: number,
+): number {
+  return invert ? 1 - func(1 - t) : func(t);
+}
