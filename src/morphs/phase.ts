@@ -10,6 +10,7 @@ export function getNormPhase(
   w: number,
   h: number,
   direction: MorphDirection,
+  defaultValue = 0.5,
 ): number {
   switch (direction) {
     case MorphDirection.Up:
@@ -28,9 +29,8 @@ export function getNormPhase(
       return mean(y / h, 1 - x / w);
     case MorphDirection.DownRight:
       return mean(y / h, x / w);
-
     default:
-      return 0.5;
+      return defaultValue;
   }
 }
 

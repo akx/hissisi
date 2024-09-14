@@ -26,7 +26,11 @@ function morph2(
   }
   switch (style) {
     case MorphStyle.Flicker:
-      return pixelwise(d1, d2, (c1, c2) => (Math.random() > phase ? c1 : c2));
+      return pixelwise(d1, d2, (c1, c2, x, y) =>
+        Math.random() * getNormPhase(x, y, w, h, direction, 1) > phase
+          ? c1
+          : c2,
+      );
     case MorphStyle.Cover:
       return pixelwise(d1, d2, (c1, c2, x, y) =>
         getNormPhase(x, y, w, h, direction) < phase ? c2 : c1,

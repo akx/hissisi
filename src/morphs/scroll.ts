@@ -41,16 +41,16 @@ export function scroll(
       let sx = x,
         sy = y;
       if (yd === MorphYDirection.Up) {
-        sy = y + Math.floor(phase * (h + 1));
+        sy = y + Math.floor(phase * h);
       }
       if (yd === MorphYDirection.Down) {
-        sy = y - Math.floor(phase * (h + 1));
+        sy = y - Math.floor(phase * h);
       }
       if (xd === MorphXDirection.Left) {
-        sx = x + Math.floor(phase * (w + 1));
+        sx = x + Math.floor(phase * w);
       }
       if (xd === MorphXDirection.Right) {
-        sx = x - Math.floor(phase * (w + 1));
+        sx = x - Math.floor(phase * w);
       }
       row.push(scrollSample(d1, d2, sx, sy, w, h));
     }
