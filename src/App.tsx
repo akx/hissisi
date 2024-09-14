@@ -7,7 +7,6 @@ import { Display } from "./components/Display.tsx";
 import { useInterval, usePersistedZodSchemaState } from "./hooks.ts";
 import { z } from "zod";
 import { morph } from "./morphs/morph.ts";
-import { ZEnumSelectRadios } from "./components/ZEnumSelectRadios.tsx";
 import cx from "classnames";
 import { MorphDirection } from "./morphs/direction.ts";
 import { getDefaultMorpherName, getMorpherNames } from "./morphs/registry.ts";
@@ -121,7 +120,9 @@ function MorphView({ font }: { font: Font }) {
             <button
               key={d}
               onClick={() => setState((s) => ({ ...s, direction: d }))}
-              className={cx("p-2", { "bg-blue-500": d === direction })}
+              className={cx("p-2", "border-1", {
+                "bg-blue-500": d === direction,
+              })}
             >
               {label}
             </button>
