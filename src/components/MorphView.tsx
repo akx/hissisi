@@ -137,7 +137,11 @@ export function MorphView({ font }: { font: Font }) {
   return (
     <>
       <div className="flex flex-col w-80 p-2">
-        <progress value={phase} max={1} className="w-full h-4 my-2" />
+        <progress
+          value={phase}
+          max={1}
+          className="w-full h-4 my-2 [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-violet-400 [&::-moz-progress-bar]:bg-violet-400"
+        />
         <div className="grid grid-cols-2 gap-y-2">
           <label>Text 1</label>
           <input
