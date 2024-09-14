@@ -1,8 +1,5 @@
 import { MorphDirection } from "./direction.ts";
-
-function mean(a: number, b: number): number {
-  return (a + b) / 2;
-}
+import { mean } from "../helpers.ts";
 
 export function getNormPhase(
   x: number,

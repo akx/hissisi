@@ -1,12 +1,19 @@
-import { Morpher } from "./types.ts";
+import { Morpher, MorpherInfo, MorpherWithInfo } from "./types.ts";
 
-const morphers: Map<string, Morpher> = new Map();
+const morphers: Map<string, MorpherWithInfo> = new Map();
 
-export function register(name: string, morpher: Morpher) {
-  morphers.set(name, morpher);
+const defaultMorpherInfo: MorpherInfo = { supportsEasings: false };
+
+export function register(
+  name: string,
+  morpher: Morpher,
+  info: Partial<MorpherInfo> = {},
+) {
+  const fullInfo: MorpherInfo = { ...defaultMorpherInfo, ...info };
+  morphers.set(name, Object.assign(morpher, fullInfo));
 }
 
-export function getMorpher(name: string): Morpher | undefined {
+export function getMorpher(name: string): MorpherWithInfo | undefined {
   return morphers.get(name);
 }
 

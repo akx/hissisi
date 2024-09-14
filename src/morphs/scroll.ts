@@ -1,10 +1,11 @@
 import { Drawing } from "../draw.ts";
 import {
   decomposeDirection,
-  MorphDirection,
   MorphXDirection,
   MorphYDirection,
 } from "./direction.ts";
+import { MorphOptions } from "./types.ts";
+import { lerp } from "../helpers.ts";
 
 function scrollSample(
   d1: Readonly<Drawing>,
@@ -31,26 +32,32 @@ export function scroll(
   w: number,
   h: number,
   phase: number,
-  direction: MorphDirection,
+  { direction, easing1, easing2 }: MorphOptions,
 ) {
   const out: Drawing = [];
   const [xd, yd] = decomposeDirection(direction);
+  const ph1 = easing1(phase);
+  const ph2 = easing2(phase);
   for (let y = 0; y < h; y++) {
     const row: boolean[] = [];
+    const yPhase = lerp(ph1, ph2, y / h);
+
     for (let x = 0; x < w; x++) {
       let sx = x,
         sy = y;
+      const xPhase = lerp(ph1, ph2, x / w);
+
       if (yd === MorphYDirection.Up) {
-        sy = y + Math.floor(phase * h);
+        sy = y + Math.floor(xPhase * h);
       }
       if (yd === MorphYDirection.Down) {
-        sy = y - Math.floor(phase * h);
+        sy = y - Math.floor(xPhase * h);
       }
       if (xd === MorphXDirection.Left) {
-        sx = x + Math.floor(phase * w);
+        sx = x + Math.floor(yPhase * w);
       }
       if (xd === MorphXDirection.Right) {
-        sx = x - Math.floor(phase * w);
+        sx = x - Math.floor(yPhase * w);
       }
       row.push(scrollSample(d1, d2, sx, sy, w, h));
     }
