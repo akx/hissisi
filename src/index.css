@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-    @apply font-sans m-0 flex;
+    @apply m-0 flex;
 }
 
 :root {
@@ -35,5 +35,17 @@ body {
 .on {
     background: var(--color-dot);
     box-shadow: 0 0 8px var(--color-dot);
+}
+
+input {
+    @apply bg-transparent;
+}
+
+input[type=text] {
+    @apply border border-slate-400 p-1;
+}
+
+input[type=radio] {
+    @apply m-1;
 }
 

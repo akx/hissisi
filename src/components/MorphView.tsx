@@ -141,11 +141,13 @@ export function MorphView({ font }: { font: Font }) {
         <div className="grid grid-cols-2 gap-y-2">
           <label>Text 1</label>
           <input
+            type="text"
             value={text1}
             onChange={(e) => setState((s) => ({ ...s, text1: e.target.value }))}
           />
           <label>Text 2</label>
           <input
+            type="text"
             value={text2}
             onChange={(e) => setState((s) => ({ ...s, text2: e.target.value }))}
           />
@@ -203,9 +205,12 @@ export function MorphView({ font }: { font: Font }) {
             <button
               key={d}
               onClick={() => setState((s) => ({ ...s, direction: d }))}
-              className={cx("p-2", "border-1", {
-                "bg-blue-500": d === direction,
-              })}
+              className={cx(
+                "p-2",
+                "border-1",
+                d === direction ? "!bg-blue-500" : "bg-slate-700",
+                "hover:bg-slate-600",
+              )}
             >
               {label}
             </button>
