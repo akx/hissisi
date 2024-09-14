@@ -217,7 +217,7 @@ export function MorphView({ font }: { font: Font }) {
             <EasingSelect
               value={easing1}
               setValue={(v) => setState((s) => ({ ...s, easing1: v }))}
-              invert={easing1Invert}
+              invert={!!easing1Invert}
               setInvert={(v) => setState((s) => ({ ...s, easing1Invert: v }))}
             />
           </div>
@@ -228,7 +228,7 @@ export function MorphView({ font }: { font: Font }) {
             <EasingSelect
               value={easing2}
               setValue={(v) => setState((s) => ({ ...s, easing2: v }))}
-              invert={easing2Invert}
+              invert={!!easing2Invert}
               setInvert={(v) => setState((s) => ({ ...s, easing2Invert: v }))}
             />
           </div>
@@ -239,7 +239,7 @@ export function MorphView({ font }: { font: Font }) {
             <EasingSelect
               value={easing3}
               setValue={(v) => setState((s) => ({ ...s, easing3: v }))}
-              invert={easing3Invert}
+              invert={!!easing3Invert}
               setInvert={(v) => setState((s) => ({ ...s, easing3Invert: v }))}
             />
           </div>
