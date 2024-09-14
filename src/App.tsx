@@ -6,15 +6,16 @@ import { addRows, draw, loadFontFromString, trimEmptyRows } from "./draw.ts";
 import { Display } from "./components/Display.tsx";
 import { useInterval, usePersistedZodSchemaState } from "./hooks.ts";
 import { z } from "zod";
-import { morph, MorphStyle } from "./morphs/morph.ts";
+import { morph } from "./morphs/morph.ts";
 import { ZEnumSelectRadios } from "./components/ZEnumSelectRadios.tsx";
 import cx from "classnames";
 import { MorphDirection } from "./morphs/direction.ts";
+import { getDefaultMorpherName, getMorpherNames } from "./morphs/registry.ts";
 
 const MorphStateSchema = z.object({
   text1: z.string(),
   text2: z.string(),
-  style: z.nativeEnum(MorphStyle),
+  style: z.string(),
   direction: z.nativeEnum(MorphDirection),
   speed: z.number().default(30),
   stay: z.number().default(0),
@@ -23,7 +24,7 @@ const MorphStateSchema = z.object({
 const defaultMorphState = MorphStateSchema.parse({
   text1: "19",
   text2: "20",
-  style: MorphStyle.Cover,
+  style: getDefaultMorpherName(),
   direction: MorphDirection.Down,
   speed: 30,
   stay: 0,
@@ -61,7 +62,7 @@ function MorphView({ font }: { font: Font }) {
   const morphDrawing = React.useMemo(() => {
     const phaseWithStay = Math.min(1, phase / (100 * (1 - (stay ?? 0))));
     return morph(drawing1, drawing2, phaseWithStay, style, direction);
-  }, [direction, drawing1, drawing2, phase, style]);
+  }, [direction, drawing1, drawing2, phase, stay, style]);
   useInterval(() => setPhase((phase + 1) % 100), 1000 / (speed ?? 30));
 
   return (
@@ -102,12 +103,18 @@ function MorphView({ font }: { font: Font }) {
           />
         </div>
 
-        <div>
-          <ZEnumSelectRadios<MorphStyle>
-            enum={MorphStyle}
-            value={style}
-            onChange={(style) => setState((s) => ({ ...s, style }))}
-          />
+        <div className="grid grid-cols-2">
+          {getMorpherNames().map((name) => (
+            <label key={name} className="p-1 text-nowrap">
+              <input
+                type="radio"
+                value={name}
+                checked={style === name}
+                onChange={() => setState((s) => ({ ...s, style: name }))}
+              />
+              {name}
+            </label>
+          ))}
         </div>
         <div className="grid grid-cols-3 gap-2">
           {directionButtons.map(([label, d]) => (

@@ -8,7 +8,7 @@ async function* getLines(text: string) {
 }
 
 export type Drawing = boolean[][];
-type Size = [number, number];
+export type Size = [number, number];
 
 export function draw(font: Font, digit: string): Drawing {
   const bitmap = font.draw(digit);
