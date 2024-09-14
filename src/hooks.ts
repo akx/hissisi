@@ -45,3 +45,12 @@ export function usePersistedZodSchemaState<T>(
   );
   return [state, setState];
 }
+
+export function useCSSVariableDefinitionOnRootEffect(
+  name: string,
+  value: string,
+): void {
+  React.useEffect(() => {
+    document.documentElement.style.setProperty(name, value);
+  }, [name, value]);
+}

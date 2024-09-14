@@ -2,8 +2,8 @@
 
 export const easings = {
   linear: (t: number) => t,
-  quadratic: (t: number) => t * (-(t * t) * t + 4 * t * t - 6 * t + 4),
-  cubic: (t: number) => t * (4 * t * t - 9 * t + 6),
+  // quadratic: (t: number) => t * (-(t * t) * t + 4 * t * t - 6 * t + 4),
+  // cubic: (t: number) => t * (4 * t * t - 9 * t + 6),
   inQuad: (t: number) => t * t,
   outQuad: (t: number) => t * (2 - t),
   inOutQuad: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
@@ -38,6 +38,10 @@ export const easings = {
     t -= 2;
     return (Math.sqrt(1 - t * t) + 1) / 2;
   },
+  halfsine: (t: number) => Math.sin(t * Math.PI),
+  halfsineQuad: (t: number) => Math.pow(Math.sin(t * Math.PI), 2),
+  halfsineSqrt: (t: number) => Math.sqrt(Math.sin(t * Math.PI)),
+  tri: (t: number) => Math.abs(t - Math.floor(t + 0.5)),
 } as const;
 
 export const easingNames = Object.keys(easings) as ReadonlyArray<EasingType>;

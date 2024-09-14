@@ -32,7 +32,7 @@ export function scroll(
   w: number,
   h: number,
   phase: number,
-  { direction, easing1, easing2 }: MorphOptions,
+  { direction, easing1, easing2, easing3 }: MorphOptions,
 ) {
   const out: Drawing = [];
   const [xd, yd] = decomposeDirection(direction);
@@ -40,12 +40,12 @@ export function scroll(
   const ph2 = easing2(phase);
   for (let y = 0; y < h; y++) {
     const row: boolean[] = [];
-    const yPhase = lerp(ph1, ph2, y / h);
+    const yPhase = lerp(ph1, ph2, easing3(y / h));
 
     for (let x = 0; x < w; x++) {
       let sx = x,
         sy = y;
-      const xPhase = lerp(ph1, ph2, x / w);
+      const xPhase = lerp(ph1, ph2, easing3(x / w));
 
       if (yd === MorphYDirection.Up) {
         sy = y + Math.floor(xPhase * h);

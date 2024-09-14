@@ -13,6 +13,7 @@ export interface MorphOptions {
   direction: MorphDirection;
   easing1: (t: number) => number;
   easing2: (t: number) => number;
+  easing3: (t: number) => number;
 }
 
 export interface MorpherInfo {

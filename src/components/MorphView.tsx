@@ -1,5 +1,9 @@
 import { Font } from "bdfparser/dist/types";
-import { useInterval, usePersistedZodSchemaState } from "../hooks.ts";
+import {
+  useCSSVariableDefinitionOnRootEffect,
+  useInterval,
+  usePersistedZodSchemaState,
+} from "../hooks.ts";
 import React from "react";
 import { addRows, draw, trimEmptyRows } from "../draw.ts";
 import { morph } from "../morphs/morph.ts";
@@ -14,7 +18,9 @@ import { MorphDirection } from "../morphs/direction.ts";
 import { z } from "zod";
 import { easingNames, easings, EasingType } from "../easing.ts";
 import { MorphOptions } from "../morphs/types.ts";
+import { EasingSelect } from "./EasingSelect.tsx";
 
+const ORANGE = "#e05d17";
 const MorphStateSchema = z.object({
   text1: z.string(),
   text2: z.string(),
@@ -24,7 +30,9 @@ const MorphStateSchema = z.object({
   stay: z.number().default(0),
   easing1: z.string().default("linear"),
   easing2: z.string().default("linear"),
+  easing3: z.string().default("linear"),
   pingpong: z.boolean().default(false),
+  color: z.string().default(ORANGE),
 });
 const defaultMorphState = MorphStateSchema.parse({
   text1: "19",
@@ -35,7 +43,9 @@ const defaultMorphState = MorphStateSchema.parse({
   stay: 0,
   easing1: "linear",
   easing2: "linear",
+  easing3: "linear",
   pingpong: false,
+  color: ORANGE,
 });
 const directionButtons: [string, MorphDirection][] = [
   ["↖️", MorphDirection.UpLeft],
@@ -57,15 +67,17 @@ export function MorphView({ font }: { font: Font }) {
   );
   const [showDebug, setShowDebug] = React.useState(false);
   const {
-    text1,
-    text2,
-    style,
+    color,
     direction,
-    speed,
-    stay,
     easing1,
     easing2,
+    easing3,
     pingpong,
+    speed,
+    stay,
+    style,
+    text1,
+    text2,
   } = state;
   const drawing1 = React.useMemo(
     () => addRows(trimEmptyRows(draw(font, text1)), 1),
@@ -80,20 +92,32 @@ export function MorphView({ font }: { font: Font }) {
     ? Math.abs((rawPhase % 200) - 100) / 100
     : (rawPhase % 100) / 100;
   const morphDrawing = React.useMemo(() => {
-    const phaseWithStay = Math.min(1, phase / (1 - (stay ?? 0) / 100));
+    const phaseWithStay = Math.min(1, phase / (1 - (stay ?? 0)));
     const opts: MorphOptions = {
       direction,
-      easing1: easings[easing1 as EasingType],
-      easing2: easings[easing2 as EasingType],
+      easing1: easings[easing1 as EasingType] ?? easings.linear,
+      easing2: easings[easing2 as EasingType] ?? easings.linear,
+      easing3: easings[easing3 as EasingType] ?? easings.linear,
     };
     return morph(drawing1, drawing2, phaseWithStay, style, opts);
-  }, [direction, drawing1, drawing2, phase, stay, style, easing1, easing2]);
+  }, [
+    direction,
+    drawing1,
+    drawing2,
+    phase,
+    stay,
+    style,
+    easing1,
+    easing2,
+    easing3,
+  ]);
   useInterval(() => setRawPhase((r) => r + 1), 1000 / (speed ?? 30));
   const currentMorpher = React.useMemo(() => getMorpher(style), [style]);
+  useCSSVariableDefinitionOnRootEffect("--color-dot", color ?? ORANGE);
 
   return (
-    <div className="flex">
-      <div className="flex flex-col w-80">
+    <>
+      <div className="flex flex-col w-80 p-2">
         <progress value={phase} max={1} className="w-full h-4 my-2" />
         <div className="grid grid-cols-2 gap-y-2">
           <label>Text 1</label>
@@ -135,6 +159,12 @@ export function MorphView({ font }: { font: Font }) {
               setState((s) => ({ ...s, pingpong: e.target.checked }))
             }
           />
+          <label>Color</label>
+          <input
+            type="color"
+            value={state.color}
+            onChange={(e) => setState((s) => ({ ...s, color: e.target.value }))}
+          />
         </div>
 
         <div className="grid grid-cols-2">
@@ -167,39 +197,24 @@ export function MorphView({ font }: { font: Font }) {
           <>
             <div>
               <b>Easing 1</b>
-              <div className="grid grid-cols-2">
-                {easingNames.map((name) => (
-                  <label key={name} className="p-1 text-nowrap">
-                    <input
-                      type="radio"
-                      value={name}
-                      checked={easing1 === name}
-                      onChange={() =>
-                        setState((s) => ({ ...s, easing1: name }))
-                      }
-                    />
-                    {name}
-                  </label>
-                ))}
-              </div>
+              <EasingSelect
+                value={easing1}
+                setValue={(v) => setState((s) => ({ ...s, easing1: v }))}
+              />
             </div>
             <div>
               <b>Easing 2</b>
-              <div className="grid grid-cols-2">
-                {easingNames.map((name) => (
-                  <label key={name} className="p-1 text-nowrap">
-                    <input
-                      type="radio"
-                      value={name}
-                      checked={easing2 === name}
-                      onChange={() =>
-                        setState((s) => ({ ...s, easing2: name }))
-                      }
-                    />
-                    {name}
-                  </label>
-                ))}
-              </div>
+              <EasingSelect
+                value={easing2}
+                setValue={(v) => setState((s) => ({ ...s, easing2: v }))}
+              />
+            </div>
+            <div>
+              <b>Easing 3</b>
+              <EasingSelect
+                value={easing3}
+                setValue={(v) => setState((s) => ({ ...s, easing3: v }))}
+              />
             </div>
           </>
         ) : null}
@@ -208,11 +223,11 @@ export function MorphView({ font }: { font: Font }) {
           {showDebug ? "Hide" : "Show"} Debug
         </button>
       </div>
-      <div className="grow flex">
+      <div className="grow flex flex-col">
         {showDebug ? <Display drawing={drawing1} /> : null}
         <Display drawing={morphDrawing} />
         {showDebug ? <Display drawing={drawing2} /> : null}
       </div>
-    </div>
+    </>
   );
 }
