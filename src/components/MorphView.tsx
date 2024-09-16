@@ -22,6 +22,7 @@ import {
 import { MorphOptions } from "../morphs/types.ts";
 import { MappingSelect } from "./MappingSelect.tsx";
 import { DirectionWidget } from "./DirectionWidget.tsx";
+import cx from "classnames";
 
 const ORANGE = "#e05d17";
 
@@ -105,6 +106,8 @@ export function MorphView({ font }: { font: Font }) {
     MorphStateSchema,
     defaultMorphState,
   );
+
+  const [increment, setIncrement] = React.useState(0);
   const [showDebug, setShowDebug] = React.useState(false);
   const {
     color,
@@ -129,6 +132,18 @@ export function MorphView({ font }: { font: Font }) {
     [font, text2],
   );
   const [rawPhase, setRawPhase] = React.useState(0);
+  React.useEffect(() => {
+    if (increment) {
+      if (rawPhase % 100 === 99) {
+        const targetNum = parseInt(text1, 10) || 0;
+        setState((s) => ({
+          ...s,
+          text1: (targetNum + increment).toString(),
+          text2: (targetNum + increment * 2).toString(),
+        }));
+      }
+    }
+  }, [rawPhase, increment]);
   const phase = pingpong
     ? Math.abs((rawPhase % 200) - 100) / 100
     : (rawPhase % 100) / 100;
@@ -166,7 +181,7 @@ export function MorphView({ font }: { font: Font }) {
           max={1}
           className="w-full h-4 my-2 [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-violet-400 [&::-moz-progress-bar]:bg-violet-400"
         />
-        <div className="grid grid-cols-[33%,67%] gap-y-2">
+        <div className="grid grid-cols-[33%,67%] gap-y-2 items-center">
           <label>Text 1</label>
           <input
             type="text"
@@ -179,6 +194,42 @@ export function MorphView({ font }: { font: Font }) {
             value={text2}
             onChange={(e) => setState((s) => ({ ...s, text2: e.target.value }))}
           />
+          <label>Increment</label>
+          <div className="grid grid-cols-3 gap-px">
+            <button
+              onClick={() => setIncrement(-1)}
+              className={cx(
+                "p-2",
+                "border-1",
+                increment < 0 ? "!bg-blue-500" : "bg-slate-700",
+                "hover:bg-slate-600",
+              )}
+            >
+              ⬇️
+            </button>
+            <button
+              onClick={() => setIncrement(0)}
+              className={cx(
+                "p-2",
+                "border-1",
+                increment === 0 ? "!bg-blue-500" : "bg-slate-700",
+                "hover:bg-slate-600",
+              )}
+            >
+              ⏹️
+            </button>
+            <button
+              onClick={() => setIncrement(1)}
+              className={cx(
+                "p-2",
+                "border-1",
+                increment > 0 ? "!bg-blue-500" : "bg-slate-700",
+                "hover:bg-slate-600",
+              )}
+            >
+              ⬆️
+            </button>
+          </div>
           <label>Speed</label>
           <input
             type="range"
@@ -195,7 +246,10 @@ export function MorphView({ font }: { font: Font }) {
               type="range"
               value={stayStart}
               onChange={(e) =>
-                setState((s) => ({ ...s, stayStart: e.target.valueAsNumber }))
+                setState((s) => ({
+                  ...s,
+                  stayStart: Math.min(e.target.valueAsNumber, 0.75),
+                }))
               }
               min={0}
               max={1}
@@ -205,7 +259,10 @@ export function MorphView({ font }: { font: Font }) {
               type="range"
               value={stayEnd}
               onChange={(e) =>
-                setState((s) => ({ ...s, stayEnd: e.target.valueAsNumber }))
+                setState((s) => ({
+                  ...s,
+                  stayEnd: Math.min(e.target.valueAsNumber, 0.75),
+                }))
               }
               min={0}
               max={1}
@@ -214,13 +271,16 @@ export function MorphView({ font }: { font: Font }) {
             />
           </div>
           <label>Pingpong</label>
-          <input
-            type="checkbox"
-            checked={pingpong}
-            onChange={(e) =>
-              setState((s) => ({ ...s, pingpong: e.target.checked }))
-            }
-          />
+          <label>
+            <input
+              type="checkbox"
+              checked={pingpong}
+              onChange={(e) =>
+                setState((s) => ({ ...s, pingpong: e.target.checked }))
+              }
+            />{" "}
+            Everyday I'm pingponging
+          </label>
           <label>Color</label>
           <input
             type="color"

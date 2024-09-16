@@ -14,7 +14,7 @@ input {
     @apply bg-transparent;
 }
 
-input[type=text] {
+input[type=text],input[type=number] {
     @apply border border-slate-400 p-1;
 }
 
