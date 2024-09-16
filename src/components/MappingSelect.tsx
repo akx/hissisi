@@ -1,5 +1,6 @@
 import { mappingNames, mappings, MappingType } from "../mapping.ts";
 import React from "react";
+import cx from "classnames";
 
 type MappingSelectProps = {
   value: string | MappingType | undefined;
@@ -51,25 +52,31 @@ export function MappingSelect({
 }: MappingSelectProps) {
   return (
     <div>
-      <div className="grid grid-cols-4 text-xs">
+      <div className="grid grid-cols-5 text-xs gap-px">
         {mappingNames.map((name) => (
-          <label key={name} className="p-1 text-nowrap" title={name}>
-            <input
-              type="radio"
-              value={name}
-              checked={value === name}
-              onChange={() => setValue(name)}
-            />
+          <button
+            key={name}
+            className={cx(
+              "p-1",
+              "border-1",
+              name === value ? "!bg-blue-500" : "bg-slate-700",
+              "hover:bg-slate-600",
+            )}
+            title={name}
+            value={name}
+            aria-selected={value === name}
+            onClick={() => setValue(name)}
+          >
             <MappingPreview
               name={name}
               width={40}
               height={20}
               className="w-8 h-4 inline"
             />
-          </label>
+          </button>
         ))}
       </div>
-      <div className="grid grid-cols-2">
+      <div className="flex text-xs gap-px justify-evenly">
         <label>
           <input
             type="checkbox"

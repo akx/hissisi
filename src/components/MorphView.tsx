@@ -19,12 +19,10 @@ import { z } from "zod";
 import {
   MappingNameWithOptions,
   mappingNameWithOptionsToMappingWithOptions,
-  mappings,
-  MappingType,
-  MappingWithOptions,
 } from "../mapping.ts";
 import { MorphOptions } from "../morphs/types.ts";
 import { MappingSelect } from "./MappingSelect.tsx";
+import { directionButtons, DirectionWidget } from "./DirectionWidget.tsx";
 
 const ORANGE = "#e05d17";
 
@@ -46,7 +44,8 @@ const MorphStateSchema = z.object({
   style: z.string(),
   direction: z.nativeEnum(MorphDirection),
   speed: z.number().default(30),
-  stay: z.number().default(0),
+  stayStart: z.number().default(0),
+  stayEnd: z.number().default(0),
   mapping1: MappingNameWithOptionsSchema.default(defaultMapping),
   mapping2: MappingNameWithOptionsSchema.default(defaultMapping),
   mapping3: MappingNameWithOptionsSchema.default(defaultMapping),
@@ -59,24 +58,14 @@ const defaultMorphState = MorphStateSchema.parse({
   style: getDefaultMorpherName(),
   direction: MorphDirection.Down,
   speed: 30,
-  stay: 0,
+  stayStart: 0,
+  stayEnd: 0,
   mapping1: defaultMapping,
   mapping2: defaultMapping,
   mapping3: defaultMapping,
   pingpong: false,
   color: ORANGE,
 });
-const directionButtons: [string, MorphDirection][] = [
-  ["↖️", MorphDirection.UpLeft],
-  ["⬆️", MorphDirection.Up],
-  ["↗️", MorphDirection.UpRight],
-  ["⬅️", MorphDirection.Left],
-  ["⏹️", MorphDirection.None],
-  ["➡️", MorphDirection.Right],
-  ["↙️", MorphDirection.DownLeft],
-  ["⬇️", MorphDirection.Down],
-  ["↘️", MorphDirection.DownRight],
-] as const;
 
 function MappingUpdateWidget({
   mapping,
@@ -97,6 +86,20 @@ function MappingUpdateWidget({
   );
 }
 
+function addStay(
+  value: number,
+  stayStart: number = 0,
+  stayEnd: number = 0,
+): number {
+  if (value < stayStart) {
+    return 0;
+  }
+  if (value > 1 - stayEnd) {
+    return 1;
+  }
+  return (value - stayStart) / (1 - stayStart - stayEnd);
+}
+
 export function MorphView({ font }: { font: Font }) {
   const [state, setState] = usePersistedZodSchemaState(
     "hissisi.state.v1",
@@ -112,7 +115,8 @@ export function MorphView({ font }: { font: Font }) {
     mapping3,
     pingpong,
     speed,
-    stay,
+    stayStart,
+    stayEnd,
     style,
     text1,
     text2,
@@ -130,7 +134,7 @@ export function MorphView({ font }: { font: Font }) {
     ? Math.abs((rawPhase % 200) - 100) / 100
     : (rawPhase % 100) / 100;
   const morphDrawing = React.useMemo(() => {
-    const phaseWithStay = Math.min(1, phase / (1 - (stay ?? 0)));
+    const phaseWithStay = Math.min(1, addStay(phase, stayStart, stayEnd));
     const opts: MorphOptions = {
       direction,
       mapping1: mappingNameWithOptionsToMappingWithOptions(mapping1!),
@@ -143,7 +147,8 @@ export function MorphView({ font }: { font: Font }) {
     drawing1,
     drawing2,
     phase,
-    stay,
+    stayStart,
+    stayEnd,
     style,
     mapping1,
     mapping2,
@@ -156,13 +161,13 @@ export function MorphView({ font }: { font: Font }) {
   const nMappings = currentMorpher?.supportsMappings ?? 0;
   return (
     <>
-      <div className="flex flex-col w-80 p-2">
+      <div className="flex flex-col w-80 p-2 text-sm">
         <progress
           value={phase}
           max={1}
           className="w-full h-4 my-2 [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-violet-400 [&::-moz-progress-bar]:bg-violet-400"
         />
-        <div className="grid grid-cols-2 gap-y-2">
+        <div className="grid grid-cols-[33%,67%] gap-y-2">
           <label>Text 1</label>
           <input
             type="text"
@@ -186,16 +191,29 @@ export function MorphView({ font }: { font: Font }) {
             max={500}
           />
           <label>Stay</label>
-          <input
-            type="range"
-            value={stay}
-            onChange={(e) =>
-              setState((s) => ({ ...s, stay: e.target.valueAsNumber }))
-            }
-            min={0}
-            max={1}
-            step={0.01}
-          />
+          <div className="grid grid-cols-2">
+            <input
+              type="range"
+              value={stayStart}
+              onChange={(e) =>
+                setState((s) => ({ ...s, stayStart: e.target.valueAsNumber }))
+              }
+              min={0}
+              max={1}
+              step={0.01}
+            />
+            <input
+              type="range"
+              value={stayEnd}
+              onChange={(e) =>
+                setState((s) => ({ ...s, stayEnd: e.target.valueAsNumber }))
+              }
+              min={0}
+              max={1}
+              step={0.01}
+              className="scale-[-1]"
+            />
+          </div>
           <label>Pingpong</label>
           <input
             type="checkbox"
@@ -224,49 +242,39 @@ export function MorphView({ font }: { font: Font }) {
             </label>
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {directionButtons.map(([label, d]) => (
-            <button
-              key={d}
-              onClick={() => setState((s) => ({ ...s, direction: d }))}
-              className={cx(
-                "p-2",
-                "border-1",
-                d === direction ? "!bg-blue-500" : "bg-slate-700",
-                "hover:bg-slate-600",
-              )}
-            >
-              {label}
-            </button>
-          ))}
+        <DirectionWidget
+          direction={direction}
+          setDirection={(direction) => setState((s) => ({ ...s, direction }))}
+        />
+        <div className="flex flex-col gap-2 py-2">
+          {nMappings > 0 ? (
+            <div>
+              <b>{currentMorpher?.mapping1Name ?? "Mapping 1"}</b>
+              <MappingUpdateWidget
+                mapping={mapping1!}
+                setMapping={(mapping1) => setState((s) => ({ ...s, mapping1 }))}
+              />
+            </div>
+          ) : null}
+          {nMappings > 1 ? (
+            <div>
+              <b>{currentMorpher?.mapping2Name ?? "Mapping 2"}</b>
+              <MappingUpdateWidget
+                mapping={mapping2!}
+                setMapping={(mapping2) => setState((s) => ({ ...s, mapping2 }))}
+              />
+            </div>
+          ) : null}
+          {nMappings > 2 ? (
+            <div>
+              <b>{currentMorpher?.mapping3Name ?? "Mapping 3"}</b>
+              <MappingUpdateWidget
+                mapping={mapping3!}
+                setMapping={(mapping3) => setState((s) => ({ ...s, mapping3 }))}
+              />
+            </div>
+          ) : null}
         </div>
-        {nMappings > 0 ? (
-          <div>
-            <b>{currentMorpher?.mapping1Name ?? "Mapping 1"}</b>
-            <MappingUpdateWidget
-              mapping={mapping1!}
-              setMapping={(mapping1) => setState((s) => ({ ...s, mapping1 }))}
-            />
-          </div>
-        ) : null}
-        {nMappings > 1 ? (
-          <div>
-            <b>{currentMorpher?.mapping2Name ?? "Mapping 2"}</b>
-            <MappingUpdateWidget
-              mapping={mapping2!}
-              setMapping={(mapping2) => setState((s) => ({ ...s, mapping2 }))}
-            />
-          </div>
-        ) : null}
-        {nMappings > 2 ? (
-          <div>
-            <b>{currentMorpher?.mapping3Name ?? "Mapping 3"}</b>
-            <MappingUpdateWidget
-              mapping={mapping3!}
-              setMapping={(mapping3) => setState((s) => ({ ...s, mapping3 }))}
-            />
-          </div>
-        ) : null}
         <hr />
         <button onClick={() => setShowDebug((s) => !s)}>
           {showDebug ? "Hide" : "Show"} Debug
