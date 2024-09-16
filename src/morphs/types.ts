@@ -1,6 +1,6 @@
 import { Drawing, Size } from "../draw.ts";
 import { MorphDirection } from "./direction.ts";
-import { EasingWithOptions } from "../easing.ts";
+import { MappingWithOptions } from "../mapping.ts";
 
 export type Morpher = (
   d1: Readonly<Drawing>,
@@ -12,16 +12,16 @@ export type Morpher = (
 
 export interface MorphOptions {
   direction: MorphDirection;
-  easing1: EasingWithOptions;
-  easing2: EasingWithOptions;
-  easing3: EasingWithOptions;
+  mapping1: MappingWithOptions;
+  mapping2: MappingWithOptions;
+  mapping3: MappingWithOptions;
 }
 
 export interface MorpherInfo {
-  supportsEasings: 0 | 1 | 2 | 3;
-  easing1Name?: string;
-  easing2Name?: string;
-  easing3Name?: string;
+  supportsMappings: 0 | 1 | 2 | 3;
+  mapping1Name?: string;
+  mapping2Name?: string;
+  mapping3Name?: string;
 }
 
 export type MorpherWithInfo = Morpher & MorpherInfo;

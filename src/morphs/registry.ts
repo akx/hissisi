@@ -2,7 +2,7 @@ import { Morpher, MorpherInfo, MorpherWithInfo } from "./types.ts";
 
 const morphers: Map<string, MorpherWithInfo> = new Map();
 
-const defaultMorpherInfo: MorpherInfo = { supportsEasings: 0 };
+const defaultMorpherInfo: MorpherInfo = { supportsMappings: 0 };
 
 export function register(
   name: string,

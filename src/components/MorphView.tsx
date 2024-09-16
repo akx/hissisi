@@ -16,11 +16,30 @@ import cx from "classnames";
 import { Display } from "./Display.tsx";
 import { MorphDirection } from "../morphs/direction.ts";
 import { z } from "zod";
-import { easings, EasingType } from "../easing.ts";
+import {
+  MappingNameWithOptions,
+  mappingNameWithOptionsToMappingWithOptions,
+  mappings,
+  MappingType,
+  MappingWithOptions,
+} from "../mapping.ts";
 import { MorphOptions } from "../morphs/types.ts";
-import { EasingSelect } from "./EasingSelect.tsx";
+import { MappingSelect } from "./MappingSelect.tsx";
 
 const ORANGE = "#e05d17";
+
+const defaultMapping: MappingNameWithOptions = {
+  name: "linear",
+  invertIn: false,
+  invertOut: false,
+};
+
+const MappingNameWithOptionsSchema = z.object({
+  name: z.string(),
+  invertIn: z.boolean(),
+  invertOut: z.boolean(),
+});
+
 const MorphStateSchema = z.object({
   text1: z.string(),
   text2: z.string(),
@@ -28,12 +47,9 @@ const MorphStateSchema = z.object({
   direction: z.nativeEnum(MorphDirection),
   speed: z.number().default(30),
   stay: z.number().default(0),
-  easing1: z.string().default("linear"),
-  easing2: z.string().default("linear"),
-  easing3: z.string().default("linear"),
-  easing1Invert: z.boolean().default(false),
-  easing2Invert: z.boolean().default(false),
-  easing3Invert: z.boolean().default(false),
+  mapping1: MappingNameWithOptionsSchema.default(defaultMapping),
+  mapping2: MappingNameWithOptionsSchema.default(defaultMapping),
+  mapping3: MappingNameWithOptionsSchema.default(defaultMapping),
   pingpong: z.boolean().default(false),
   color: z.string().default(ORANGE),
 });
@@ -44,12 +60,9 @@ const defaultMorphState = MorphStateSchema.parse({
   direction: MorphDirection.Down,
   speed: 30,
   stay: 0,
-  easing1: "linear",
-  easing2: "linear",
-  easing3: "linear",
-  easing1Invert: false,
-  easing2Invert: false,
-  easing3Invert: false,
+  mapping1: defaultMapping,
+  mapping2: defaultMapping,
+  mapping3: defaultMapping,
   pingpong: false,
   color: ORANGE,
 });
@@ -65,9 +78,28 @@ const directionButtons: [string, MorphDirection][] = [
   ["↘️", MorphDirection.DownRight],
 ] as const;
 
+function MappingUpdateWidget({
+  mapping,
+  setMapping,
+}: {
+  mapping: MappingNameWithOptions;
+  setMapping: (m: MappingNameWithOptions) => void;
+}) {
+  return (
+    <MappingSelect
+      value={mapping.name}
+      setValue={(name) => setMapping({ ...mapping, name })}
+      invertIn={mapping.invertIn}
+      setInvertIn={(invertIn) => setMapping({ ...mapping, invertIn })}
+      invertOut={mapping.invertOut}
+      setInvertOut={(invertOut) => setMapping({ ...mapping, invertOut })}
+    />
+  );
+}
+
 export function MorphView({ font }: { font: Font }) {
   const [state, setState] = usePersistedZodSchemaState(
-    "state",
+    "hissisi.state.v1",
     MorphStateSchema,
     defaultMorphState,
   );
@@ -75,12 +107,9 @@ export function MorphView({ font }: { font: Font }) {
   const {
     color,
     direction,
-    easing1,
-    easing2,
-    easing3,
-    easing1Invert,
-    easing2Invert,
-    easing3Invert,
+    mapping1,
+    mapping2,
+    mapping3,
     pingpong,
     speed,
     stay,
@@ -104,18 +133,9 @@ export function MorphView({ font }: { font: Font }) {
     const phaseWithStay = Math.min(1, phase / (1 - (stay ?? 0)));
     const opts: MorphOptions = {
       direction,
-      easing1: {
-        func: easings[easing1 as EasingType] ?? easings.linear,
-        invert: !!easing1Invert,
-      },
-      easing2: {
-        func: easings[easing2 as EasingType] ?? easings.linear,
-        invert: !!easing2Invert,
-      },
-      easing3: {
-        func: easings[easing3 as EasingType] ?? easings.linear,
-        invert: !!easing3Invert,
-      },
+      mapping1: mappingNameWithOptionsToMappingWithOptions(mapping1!),
+      mapping2: mappingNameWithOptionsToMappingWithOptions(mapping2!),
+      mapping3: mappingNameWithOptionsToMappingWithOptions(mapping3!),
     };
     return morph(drawing1, drawing2, phaseWithStay, style, opts);
   }, [
@@ -125,15 +145,15 @@ export function MorphView({ font }: { font: Font }) {
     phase,
     stay,
     style,
-    easing1,
-    easing2,
-    easing3,
+    mapping1,
+    mapping2,
+    mapping3,
   ]);
   useInterval(() => setRawPhase((r) => r + 1), 1000 / (speed ?? 30));
   const currentMorpher = React.useMemo(() => getMorpher(style), [style]);
   useCSSVariableDefinitionOnRootEffect("--color-dot", color ?? ORANGE);
 
-  const nEasings = currentMorpher?.supportsEasings ?? 0;
+  const nMappings = currentMorpher?.supportsMappings ?? 0;
   return (
     <>
       <div className="flex flex-col w-80 p-2">
@@ -220,36 +240,30 @@ export function MorphView({ font }: { font: Font }) {
             </button>
           ))}
         </div>
-        {nEasings > 0 ? (
+        {nMappings > 0 ? (
           <div>
-            <b>{currentMorpher?.easing1Name ?? "Easing 1"}</b>
-            <EasingSelect
-              value={easing1}
-              setValue={(v) => setState((s) => ({ ...s, easing1: v }))}
-              invert={!!easing1Invert}
-              setInvert={(v) => setState((s) => ({ ...s, easing1Invert: v }))}
+            <b>{currentMorpher?.mapping1Name ?? "Mapping 1"}</b>
+            <MappingUpdateWidget
+              mapping={mapping1!}
+              setMapping={(mapping1) => setState((s) => ({ ...s, mapping1 }))}
             />
           </div>
         ) : null}
-        {nEasings > 1 ? (
+        {nMappings > 1 ? (
           <div>
-            <b>{currentMorpher?.easing2Name ?? "Easing 2"}</b>
-            <EasingSelect
-              value={easing2}
-              setValue={(v) => setState((s) => ({ ...s, easing2: v }))}
-              invert={!!easing2Invert}
-              setInvert={(v) => setState((s) => ({ ...s, easing2Invert: v }))}
+            <b>{currentMorpher?.mapping2Name ?? "Mapping 2"}</b>
+            <MappingUpdateWidget
+              mapping={mapping2!}
+              setMapping={(mapping2) => setState((s) => ({ ...s, mapping2 }))}
             />
           </div>
         ) : null}
-        {nEasings > 2 ? (
+        {nMappings > 2 ? (
           <div>
-            <b>{currentMorpher?.easing3Name ?? "Easing 3"}</b>
-            <EasingSelect
-              value={easing3}
-              setValue={(v) => setState((s) => ({ ...s, easing3: v }))}
-              invert={!!easing3Invert}
-              setInvert={(v) => setState((s) => ({ ...s, easing3Invert: v }))}
+            <b>{currentMorpher?.mapping3Name ?? "Mapping 3"}</b>
+            <MappingUpdateWidget
+              mapping={mapping3!}
+              setMapping={(mapping3) => setState((s) => ({ ...s, mapping3 }))}
             />
           </div>
         ) : null}

@@ -1,6 +1,6 @@
-// Via https://github.com/streamich/ts-easing
+// Via https://github.com/streamich/ts-mapping
 
-export const easings = {
+export const mappings = {
   linear: (t: number) => t,
   // quadratic: (t: number) => t * (-(t * t) * t + 4 * t * t - 6 * t + 4),
   // cubic: (t: number) => t * (4 * t * t - 9 * t + 6),
@@ -44,17 +44,38 @@ export const easings = {
   tri: (t: number) => Math.abs(t - Math.floor(t + 0.5)),
 } as const;
 
-export const easingNames = Object.keys(easings) as ReadonlyArray<EasingType>;
-export type EasingType = keyof typeof easings;
+export const mappingNames = Object.keys(mappings) as ReadonlyArray<MappingType>;
+export type MappingType = keyof typeof mappings;
 
-export interface EasingWithOptions {
-  func: (t: number) => number;
-  invert: boolean;
+export interface MappingOptions {
+  invertIn: boolean;
+  invertOut: boolean;
 }
 
-export function applyEasingWithOptions(
-  { func, invert }: EasingWithOptions,
+export interface MappingWithOptions extends MappingOptions {
+  func: (t: number) => number;
+}
+
+export interface MappingNameWithOptions extends MappingOptions {
+  name: MappingType | string;
+}
+
+export function mappingNameWithOptionsToMappingWithOptions({
+  name,
+  invertIn,
+  invertOut,
+}: MappingNameWithOptions): MappingWithOptions {
+  return {
+    func: mappings[name] ?? mappings.linear,
+    invertIn,
+    invertOut,
+  };
+}
+
+export function applyMappingWithOptions(
+  { func, invertIn, invertOut }: MappingWithOptions,
   t: number,
 ): number {
-  return invert ? 1 - func(1 - t) : func(t);
+  const value = func(invertIn ? 1 - t : t);
+  return invertOut ? 1 - value : value;
 }

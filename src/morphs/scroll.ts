@@ -6,7 +6,7 @@ import {
 } from "./direction.ts";
 import { MorphOptions } from "./types.ts";
 import { lerp } from "../helpers.ts";
-import { applyEasingWithOptions } from "../easing.ts";
+import { applyMappingWithOptions } from "../mapping.ts";
 
 function scrollSample(
   d1: Readonly<Drawing>,
@@ -33,20 +33,20 @@ export function scroll(
   w: number,
   h: number,
   phase: number,
-  { direction, easing1, easing2, easing3 }: MorphOptions,
+  { direction, mapping1, mapping2, mapping3 }: MorphOptions,
 ) {
   const out: Drawing = [];
   const [xd, yd] = decomposeDirection(direction);
-  const ph1 = applyEasingWithOptions(easing1, phase);
-  const ph2 = applyEasingWithOptions(easing2, phase);
+  const ph1 = applyMappingWithOptions(mapping1, phase);
+  const ph2 = applyMappingWithOptions(mapping2, phase);
   for (let y = 0; y < h; y++) {
     const row: boolean[] = [];
-    const yPhase = lerp(ph1, ph2, applyEasingWithOptions(easing3, y / h));
+    const yPhase = lerp(ph1, ph2, applyMappingWithOptions(mapping3, y / h));
 
     for (let x = 0; x < w; x++) {
       let sx = x,
         sy = y;
-      const xPhase = lerp(ph1, ph2, applyEasingWithOptions(easing3, x / w));
+      const xPhase = lerp(ph1, ph2, applyMappingWithOptions(mapping3, x / w));
 
       if (yd === MorphYDirection.Up) {
         sy = y + Math.floor(xPhase * h);
