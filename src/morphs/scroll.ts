@@ -7,25 +7,14 @@ import {
 import { MorphOptions } from "./types.ts";
 import { lerp } from "../helpers.ts";
 import { applyMappingWithOptions } from "../mapping.ts";
+import {
+  Neighborhood,
+  scrollSampleNeighborhood,
+} from "../helpers/scrollSample.ts";
 
-function scrollSample(
-  d1: Readonly<Drawing>,
-  d2: Readonly<Drawing>,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): boolean {
-  // In this virtual coordinate space, there's one copy of d1 at (0,0),
-  // and it's surrounded by copies of d2. Therefore, sampling at a negative X
-  // or Y will sample from d2, as will sampling outside the bounds of d1 (w, h).
-  if (x < 0 || y < 0 || x >= w || y >= h) {
-    while (y < 0) y += h;
-    while (x < 0) x += w;
-    return d2[y % h]?.[x % w] ?? false;
-  }
-  return d1[y]?.[x] ?? false;
-}
+const vertNeighborhood: Neighborhood = [0, 2, 0, 0, 1, 0, 0, 2, 0];
+const horzNeighborhood: Neighborhood = [0, 0, 0, 2, 1, 2, 0, 0, 0];
+const diagNeighborhood: Neighborhood = [2, 0, 2, 0, 1, 0, 2, 0, 2];
 
 export function scroll(
   d1: Readonly<Drawing>,
@@ -39,6 +28,12 @@ export function scroll(
   const [xd, yd] = decomposeDirection(direction);
   const ph1 = applyMappingWithOptions(mapping1, phase);
   const ph2 = applyMappingWithOptions(mapping2, phase);
+  const neighborhood =
+    xd != MorphXDirection.None
+      ? yd != MorphYDirection.None
+        ? diagNeighborhood
+        : horzNeighborhood
+      : vertNeighborhood;
   for (let y = 0; y < h; y++) {
     const row: boolean[] = [];
     const yPhase = lerp(ph1, ph2, applyMappingWithOptions(mapping3, y / h));
@@ -60,7 +55,7 @@ export function scroll(
       if (xd === MorphXDirection.Right) {
         sx = x - Math.floor(yPhase * w);
       }
-      row.push(scrollSample(d1, d2, sx, sy, w, h));
+      row.push(scrollSampleNeighborhood(d1, d2, sx, sy, w, h, neighborhood));
     }
     out.push(row);
   }

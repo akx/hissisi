@@ -41,7 +41,7 @@ export const mappings = {
   halfsine: (t: number) => Math.sin(t * Math.PI),
   halfsineQuad: (t: number) => Math.pow(Math.sin(t * Math.PI), 2),
   halfsineSqrt: (t: number) => Math.sqrt(Math.sin(t * Math.PI)),
-  tri: (t: number) => Math.abs(t - Math.floor(t + 0.5)),
+  tri: (t: number) => 1 - Math.abs((t - 0.5) * 2),
 } as const;
 
 export const mappingNames = Object.keys(mappings) as ReadonlyArray<MappingType>;
