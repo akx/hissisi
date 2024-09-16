@@ -1,8 +1,7 @@
 import { MorphDirection } from "../morphs/direction.ts";
 import cx from "classnames";
-import React from "react";
 
-export const directionButtons: [string, MorphDirection][] = [
+const directionButtons: [string, MorphDirection][] = [
   ["↖️", MorphDirection.UpLeft],
   ["⬆️", MorphDirection.Up],
   ["↗️", MorphDirection.UpRight],

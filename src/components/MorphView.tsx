@@ -12,7 +12,6 @@ import {
   getMorpher,
   getMorpherNames,
 } from "../morphs/registry.ts";
-import cx from "classnames";
 import { Display } from "./Display.tsx";
 import { MorphDirection } from "../morphs/direction.ts";
 import { z } from "zod";
@@ -22,7 +21,7 @@ import {
 } from "../mapping.ts";
 import { MorphOptions } from "../morphs/types.ts";
 import { MappingSelect } from "./MappingSelect.tsx";
-import { directionButtons, DirectionWidget } from "./DirectionWidget.tsx";
+import { DirectionWidget } from "./DirectionWidget.tsx";
 
 const ORANGE = "#e05d17";
 

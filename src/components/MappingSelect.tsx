@@ -1,5 +1,4 @@
 import { mappingNames, mappings, MappingType } from "../mapping.ts";
-import React from "react";
 import cx from "classnames";
 
 type MappingSelectProps = {

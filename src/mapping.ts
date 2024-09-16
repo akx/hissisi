@@ -1,5 +1,7 @@
 // Via https://github.com/streamich/ts-mapping
 
+type MappingFunc = (t: number) => number;
+
 export const mappings = {
   linear: (t: number) => t,
   // quadratic: (t: number) => t * (-(t * t) * t + 4 * t * t - 6 * t + 4),
@@ -53,7 +55,7 @@ export interface MappingOptions {
 }
 
 export interface MappingWithOptions extends MappingOptions {
-  func: (t: number) => number;
+  func: MappingFunc;
 }
 
 export interface MappingNameWithOptions extends MappingOptions {
@@ -66,7 +68,7 @@ export function mappingNameWithOptionsToMappingWithOptions({
   invertOut,
 }: MappingNameWithOptions): MappingWithOptions {
   return {
-    func: mappings[name] ?? mappings.linear,
+    func: mappings[name as MappingType] ?? mappings.linear,
     invertIn,
     invertOut,
   };
