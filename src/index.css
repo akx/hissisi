@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  @apply m-0 flex;
+}
+
+:root {
+  --color-dot: #ccc;
+}
+
+input {
+  @apply bg-transparent;
+}
+
+input[type="text"],
+input[type="number"] {
+  @apply border border-slate-400 p-1;
+}
+
+input[type="radio"] {
+  @apply m-1;
+}
