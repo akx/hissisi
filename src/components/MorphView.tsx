@@ -143,7 +143,7 @@ export function MorphView({ font }: { font: Font }) {
         }));
       }
     }
-  }, [rawPhase, increment]);
+  }, [rawPhase, increment, text1, setState]);
   const phase = pingpong
     ? Math.abs((rawPhase % 200) - 100) / 100
     : (rawPhase % 100) / 100;
@@ -344,7 +344,6 @@ export function MorphView({ font }: { font: Font }) {
         <Display drawing={morphDrawing} />
         {showDebug ? <Display drawing={drawing2} /> : null}
       </div>
-      ;
     </>
   );
 }
